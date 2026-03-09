@@ -1,5 +1,8 @@
 import re
 
+with open("program.ss") as f:
+    code = f.read()
+
 # Define regular expressions for SoccerScript tokens
 TOKEN_SPECIFICATION = [
     ('COMMENT', r'#[^\n]*'), # Comments starting with # and continuing to the end of the line
@@ -17,41 +20,34 @@ TOKEN_SPECIFICATION = [
 # Compile the regular expressions into a pattern
 token_regex = '|'.join(f'(?P<{name}>{pattern})' for name, pattern in TOKEN_SPECIFICATION)
 
-def scan_soccer_script(code):
-    """
-    Scanner for SoccerScript code.
-    """
-    tokens = []
-    for match in re.finditer(token_regex, code):
-        kind = match.lastgroup
-        value = match.group()
-        if kind == 'NEWLINE':
-            continue
-        elif kind == 'SKIP':
-            continue
-        elif kind == 'COMMENT': 
-            tokens.append((kind, value)) 
-        elif kind == 'MISMATCH':
-            raise RuntimeError(f'Unexpected character: {value}')
-        else:
-            tokens.append((kind, value))
-    return tokens
+for match in re.finditer(token_regex, code):
 
-# Example SoccerScript code
-soccer_code = """
-kickoff:
-    player = receive("Enter player: ")
-    # iam a comment
-    goals = receive("Enter goals: ")
-    referee goals >= 3:
-        shout("Hat-trick!")
-    assist goals == 2:
-        shout("Brace!")
-    offside:
-        shout("Keep Training")
-"""
+    token_type = match.lastgroup
+    value = match.group()
+    position = match.start()
 
-# Scan the code and print tokens
-tokens = scan_soccer_script(soccer_code)
-for token in tokens:
-    print(token)
+    if token_type != "SKIP":
+        print(f'{token_type}: {value!r} at pos {position}')
+
+# ================================
+# code 1
+# ================================
+# kickoff:
+#     @play = "hello" 
+#     num = 123 
+#     # This is a comment
+
+# ================================
+# code 2
+# ================================
+# kickoff:
+#     player = receive("Enter player: ")
+#     # iam a comment
+#     goals = receive("Enter goals: ")
+#     referee goals >= 3:
+#         shout("Hat-trick!")
+#     assist goals == 2:
+#         shout("Brace!")
+#     offside:
+#         shout("Keep Training")
+
